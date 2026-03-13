@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const MAIN_DOMAIN =
-  process.env.NEXT_PUBLIC_MAIN_DOMAIN || "localhost:3000";
+  process.env.NEXT_PUBLIC_MAIN_DOMAIN ||
+  process.env.VERCEL_URL ||
+  "localhost:3000";
 
 export function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const host = req.headers.get("host") || "";
+  const mainDomain = MAIN_DOMAIN.replace(/^https?:\/\//, "");
 
   // If we are on the main domain, just continue to the normal app (landing + form)
-  if (host === MAIN_DOMAIN) {
+  if (host === mainDomain || host === `www.${mainDomain}`) {
     return NextResponse.next();
   }
 
@@ -41,4 +44,3 @@ export function middleware(req: NextRequest) {
 export const config = {
   matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
 };
-
