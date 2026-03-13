@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+## Applicazione multi-tenant per commercialisti
 
-## Getting Started
+Applicazione Next.js (App Router) che permette a studi di commercialisti di creare siti single-page su sottodomini dedicati, pronta per il deploy su Vercel.
 
-First, run the development server:
+### Funzionamento
+
+- **Landing principale** sul dominio principale con form guidato (`/wizard`) per creare un nuovo sito.
+- **Sottodomini dinamici**: richieste a `slug.miosito.com` vengono riscritte alla route `/[subdomain]` che mostra il sito del commercialista.
+- **Database**: Prisma + PostgreSQL (es. Supabase) con modelli `Site` e `Service`.
+- **Immagini**: upload opzionale di logo e immagine di copertina tramite Vercel Blob.
+- **Template**: due varianti single-page:
+  - Template A: Minimal Tech (blu/grigio, sans-serif, layout tech).
+  - Template B: Elegant Corporate (antracite/oro, serif per i titoli, layout istituzionale).
+
+### Setup locale
+
+1. Installa le dipendenze:
+
+```bash
+npm install
+```
+
+2. Copia il file di esempio delle variabili d'ambiente:
+
+```bash
+cp .env.example .env
+```
+
+Compila `DATABASE_URL`, `NEXT_PUBLIC_MAIN_DOMAIN` (facoltativa in sviluppo) e `BLOB_READ_WRITE_TOKEN` se vuoi testare l'upload.
+
+3. Esegui le migrazioni Prisma:
+
+```bash
+npx prisma migrate dev --name init
+```
+
+4. Avvia il server di sviluppo:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Apri `http://localhost:3000` per vedere la landing e `http://localhost:3000/wizard` per il form multi-step.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Deploy su Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Collega il repository** a Vercel e crea un nuovo progetto.
+2. In **Settings → Environment Variables** configura:
+   - `DATABASE_URL`: stringa di connessione al database PostgreSQL/Supabase.
+   - `NEXT_PUBLIC_MAIN_DOMAIN`: dominio principale senza protocollo (es. `miosito.com`).
+   - `BLOB_READ_WRITE_TOKEN`: token di lettura/scrittura generato dalla sezione Blob del progetto Vercel.
+3. Assicurati che le migrazioni Prisma vengano eseguite (build hook o esecuzione manuale da una macchina di gestione).
+4. Imposta il dominio principale in Vercel (es. `miosito.com`). Le richieste a `slug.miosito.com` verranno gestite dal `middleware.ts` per il multi-tenancy.
 
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
