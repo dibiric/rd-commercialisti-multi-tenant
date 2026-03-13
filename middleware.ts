@@ -8,25 +8,31 @@ const MAIN_DOMAIN =
 export function middleware(req: NextRequest) {
   const url = req.nextUrl;
   const host = req.headers.get("host") || "";
-  const mainDomain = MAIN_DOMAIN.replace(/^https?:\/\//, "");
+  const hostNoPort = host.split(":")[0];
+  const mainDomain = MAIN_DOMAIN.replace(/^https?:\/\//, "").split(":")[0];
 
   // If we are on the main domain, just continue to the normal app (landing + form)
-  if (host === mainDomain || host === `www.${mainDomain}`) {
+  if (hostNoPort === mainDomain || hostNoPort === `www.${mainDomain}`) {
+    return NextResponse.next();
+  }
+
+  // Do not treat Vercel default domains as tenant subdomains
+  if (hostNoPort.endsWith(".vercel.app")) {
     return NextResponse.next();
   }
 
   // Handle localhost subdomains like slug.localhost:3000
-  const isLocalhost = host.includes("localhost");
+  const isLocalhost = hostNoPort.includes("localhost");
   let subdomain: string | null = null;
 
   if (isLocalhost) {
-    const [possibleSub] = host.split(".");
+    const [possibleSub] = hostNoPort.split(".");
     if (possibleSub && possibleSub !== "localhost") {
       subdomain = possibleSub;
     }
   } else {
     // production: mario-rossi.miosito.com -> mario-rossi
-    const parts = host.split(".");
+    const parts = hostNoPort.split(".");
     if (parts.length > 2) {
       subdomain = parts[0];
     }
